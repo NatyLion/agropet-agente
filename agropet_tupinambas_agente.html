@@ -1,0 +1,539 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Agro&Pet Tupinambas — Agente Digital Estratégico</title>
+<style>
+:root {
+  --green: #2d6a4f; --green-light: #52b788; --green-pale: #d8f3dc;
+  --amber: #c77800; --amber-light: #f4a261; --amber-pale: #fff3cd;
+  --blue: #1565c0; --blue-pale: #e3f2fd;
+  --red: #b71c1c; --red-pale: #ffebee;
+  --purple: #4a148c; --purple-pale: #f3e5f5;
+  --teal: #00695c; --teal-pale: #e0f2f1;
+  --gray: #37474f; --gray-pale: #eceff1; --gray-light: #b0bec5;
+  --bg: #f0f4f8; --card: #ffffff; --border: #dde4ee;
+  --text: #1a2332; --muted: #5a6a7e;
+  --font: 'Segoe UI', system-ui, sans-serif;
+  --radius: 12px;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: var(--font); background: var(--bg); color: var(--text); font-size: 14px; height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
+
+/* TOP BAR */
+.topbar { background: var(--green); color: #fff; padding: 0 1.5rem; display: flex; align-items: center; gap: 1rem; height: 56px; flex-shrink: 0; }
+.topbar-logo { font-weight: 800; font-size: 15px; display: flex; align-items: center; gap: 8px; }
+.topbar-logo span { font-size: 20px; }
+.status-dot { width: 8px; height: 8px; border-radius: 50%; background: #81c784; margin-left: 4px; animation: pulse 2s infinite; }
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.4} }
+.topbar-phase { background: rgba(255,255,255,0.15); border-radius: 6px; padding: 4px 12px; font-size: 12px; margin-left: auto; }
+.topbar-reset { background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.25); border-radius: 6px; padding: 5px 12px; font-size: 12px; cursor: pointer; color: #fff; }
+.topbar-reset:hover { background: rgba(255,255,255,0.2); }
+
+/* MAIN LAYOUT */
+.main { display: flex; flex: 1; overflow: hidden; gap: 0; }
+
+/* SIDEBAR */
+.sidebar { width: 280px; flex-shrink: 0; background: var(--card); border-right: 1px solid var(--border); display: flex; flex-direction: column; overflow: hidden; }
+.sidebar-section { padding: 12px 14px; border-bottom: 1px solid var(--border); }
+.sidebar-title { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .07em; color: var(--gray-light); margin-bottom: 8px; }
+.kpi-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+.kpi-box { background: var(--bg); border-radius: 8px; padding: 8px; }
+.kpi-v { font-size: 16px; font-weight: 800; color: var(--text); }
+.kpi-l { font-size: 10px; color: var(--muted); margin-top: 1px; }
+.kpi-d { font-size: 10px; margin-top: 2px; font-weight: 600; }
+.kpi-d.up { color: var(--green); }
+.kpi-d.warn { color: var(--amber); }
+.kpi-d.crit { color: var(--red); }
+
+/* SCENARIO BUTTONS */
+.scen-btn { width: 100%; text-align: left; padding: 9px 12px; border-radius: 8px; border: 1px solid var(--border); background: var(--card); cursor: pointer; font-size: 12px; color: var(--text); display: flex; align-items: center; gap: 8px; margin-bottom: 4px; transition: all .15s; }
+.scen-btn:hover { background: var(--green-pale); border-color: var(--green-light); color: var(--green); }
+.scen-btn.active { background: var(--green); color: #fff; border-color: var(--green); }
+.scen-icon { font-size: 16px; width: 20px; text-align: center; }
+.scen-text { flex: 1; }
+.scen-text strong { display: block; font-size: 12px; font-weight: 600; }
+.scen-text span { font-size: 10px; opacity: .7; }
+
+/* CHAT AREA */
+.chat-area { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+.chat-log { flex: 1; overflow-y: auto; padding: 1.5rem; display: flex; flex-direction: column; gap: 12px; }
+.msg { display: flex; gap: 10px; animation: fadeIn .3s ease; max-width: 100%; }
+@keyframes fadeIn { from{opacity:0;transform:translateY(6px)} to{opacity:1;transform:none} }
+.msg-avatar { width: 34px; height: 34px; border-radius: 50%; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 14px; margin-top: 2px; }
+.msg-body { flex: 1; min-width: 0; }
+.msg-meta { display: flex; align-items: center; gap: 8px; margin-bottom: 4px; }
+.msg-name { font-size: 12px; font-weight: 700; }
+.msg-ts { font-size: 10px; color: var(--gray-light); }
+.msg-tag { font-size: 10px; font-weight: 600; padding: 2px 8px; border-radius: 10px; }
+.tag-diag { background: var(--blue-pale); color: var(--blue); }
+.tag-acao { background: var(--green-pale); color: var(--green); }
+.tag-alert { background: var(--amber-pale); color: var(--amber); }
+.tag-crise { background: var(--red-pale); color: var(--red); }
+.tag-meta { background: var(--purple-pale); color: var(--purple); }
+.tag-op { background: var(--teal-pale); color: var(--teal); }
+.tag-user { background: var(--gray-pale); color: var(--gray); }
+.msg-content { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 10px 14px; font-size: 13px; line-height: 1.65; color: var(--text); word-wrap: break-word; }
+.msg-content strong { font-weight: 700; color: var(--text); }
+.msg.user .msg-content { background: var(--green-pale); border-color: var(--green-light); }
+.msg.system .msg-content { background: var(--bg); border-style: dashed; }
+
+/* DECISION CARD */
+.decision-card { background: var(--card); border: 1.5px solid var(--green); border-radius: 10px; padding: 12px 14px; margin: 4px 0; }
+.decision-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .05em; color: var(--green); margin-bottom: 6px; }
+.decision-body { font-size: 13px; line-height: 1.6; }
+.decision-actions { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+.dec-btn { padding: 5px 12px; border-radius: 6px; border: 1px solid var(--border); font-size: 12px; cursor: pointer; background: var(--bg); transition: all .15s; }
+.dec-btn:hover { background: var(--green); color: #fff; border-color: var(--green); }
+
+/* INPUT */
+.chat-input-row { padding: 12px 1.5rem 1.5rem; border-top: 1px solid var(--border); background: var(--card); display: flex; gap: 8px; }
+.chat-input { flex: 1; border: 1px solid var(--border); border-radius: 8px; padding: 10px 14px; font-size: 13px; font-family: var(--font); background: var(--bg); color: var(--text); outline: none; resize: none; height: 42px; }
+.chat-input:focus { border-color: var(--green); background: #fff; }
+.send-btn { background: var(--green); color: #fff; border: none; border-radius: 8px; padding: 0 18px; font-size: 13px; cursor: pointer; font-weight: 600; transition: background .15s; }
+.send-btn:hover { background: var(--green-light); }
+
+/* SIDEBAR SCROLL */
+.sidebar-scroll { overflow-y: auto; flex: 1; padding: 12px 14px; scrollbar-width: thin; }
+.sidebar-scroll::-webkit-scrollbar { width: 4px; }
+.sidebar-scroll::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+/* RIGHT PANEL */
+.right-panel { width: 240px; flex-shrink: 0; border-left: 1px solid var(--border); background: var(--card); display: flex; flex-direction: column; overflow: hidden; }
+.rp-section { padding: 12px 14px; border-bottom: 1px solid var(--border); }
+.rp-title { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .07em; color: var(--gray-light); margin-bottom: 8px; }
+.vert-pill { display: flex; align-items: center; gap: 8px; padding: 6px 8px; border-radius: 6px; font-size: 12px; margin-bottom: 4px; cursor: pointer; }
+.vert-pill:hover { background: var(--bg); }
+.vert-pill .dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+.vert-pill .name { font-weight: 600; }
+.vert-pill .status { margin-left: auto; font-size: 10px; border-radius: 4px; padding: 1px 6px; }
+
+/* BADGES */
+.badge { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 11px; font-weight: 600; }
+.badge-green { background: var(--green-pale); color: var(--green); }
+.badge-amber { background: var(--amber-pale); color: var(--amber); }
+.badge-blue { background: var(--blue-pale); color: var(--blue); }
+.badge-red { background: var(--red-pale); color: var(--red); }
+.badge-gray { background: var(--gray-pale); color: var(--gray); }
+
+/* RSPN SCROLL */
+.rp-scroll { overflow-y: auto; flex: 1; padding: 12px 14px; scrollbar-width: thin; }
+.log-mini { font-size: 11px; color: var(--muted); padding: 5px 0; border-bottom: 1px solid var(--border); line-height: 1.5; }
+.log-mini strong { color: var(--text); }
+.log-mini:last-child { border-bottom: none; }
+
+/* TYPING */
+.typing-dot { display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: var(--gray-light); animation: typing .9s infinite; margin: 0 1px; }
+.typing-dot:nth-child(2) { animation-delay: .2s; }
+.typing-dot:nth-child(3) { animation-delay: .4s; }
+@keyframes typing { 0%,60%,100%{transform:translateY(0)} 30%{transform:translateY(-6px)} }
+
+@media(max-width:900px) { .right-panel{display:none;} }
+@media(max-width:650px) { .sidebar{width:220px;} }
+</style>
+</head>
+<body>
+
+<!-- TOP BAR -->
+<div class="topbar">
+  <div class="topbar-logo"><span>🌿</span> AgroPet Tupinambas<div class="status-dot"></div></div>
+  <div style="font-size:11px;opacity:.7;">Agente Digital Estratégico v1.0 · Itamonte · Mantiqueira</div>
+  <div class="topbar-phase" id="top-phase">Aguardando cenário</div>
+  <button class="topbar-reset" onclick="resetAgent()">↺ Reiniciar</button>
+</div>
+
+<!-- MAIN -->
+<div class="main">
+
+  <!-- SIDEBAR -->
+  <div class="sidebar">
+    <div class="sidebar-section">
+      <div class="sidebar-title">KPIs da operação</div>
+      <div class="kpi-grid">
+        <div class="kpi-box"><div class="kpi-v" id="kv-gmv">R$ 0</div><div class="kpi-l">GMV/mês</div><div class="kpi-d" id="kd-gmv">—</div></div>
+        <div class="kpi-box"><div class="kpi-v" id="kv-ped">0</div><div class="kpi-l">Pedidos/mês</div><div class="kpi-d" id="kd-ped">—</div></div>
+        <div class="kpi-box"><div class="kpi-v" id="kv-skus">0</div><div class="kpi-l">SKUs ativos</div><div class="kpi-d" id="kd-skus">—</div></div>
+        <div class="kpi-box"><div class="kpi-v" id="kv-status">—</div><div class="kpi-l">Status ML</div><div class="kpi-d" id="kd-status">—</div></div>
+        <div class="kpi-box"><div class="kpi-v" id="kv-avaliacao">—</div><div class="kpi-l">Avaliação</div><div class="kpi-d" id="kd-av">—</div></div>
+        <div class="kpi-box"><div class="kpi-v" id="kv-margem">—</div><div class="kpi-l">Margem líq.</div><div class="kpi-d" id="kd-mg">—</div></div>
+      </div>
+    </div>
+    <div class="sidebar-section" style="padding-bottom:8px;">
+      <div class="sidebar-title">Cenários de execução</div>
+    </div>
+    <div class="sidebar-scroll" id="scen-list">
+      <button class="scen-btn" id="btn-s1" onclick="runScenario('mes1')">
+        <span class="scen-icon">🚀</span>
+        <div class="scen-text"><strong>Mês 1 — fundação digital</strong><span>Abertura de contas, catálogo inicial</span></div>
+      </button>
+      <button class="scen-btn" id="btn-s2" onclick="runScenario('kit')">
+        <span class="scen-icon">🏔️</span>
+        <div class="scen-text"><strong>Lançar Kit Agulhas Negras</strong><span>Produto âncora outdoor</span></div>
+      </button>
+      <button class="scen-btn" id="btn-s3" onclick="runScenario('pet')">
+        <span class="scen-icon">🐾</span>
+        <div class="scen-text"><strong>Vertical Pet — escala</strong><span>Saúde preventiva e recorrência</span></div>
+      </button>
+      <button class="scen-btn" id="btn-s4" onclick="runScenario('outdoor')">
+        <span class="scen-icon">🎒</span>
+        <div class="scen-text"><strong>Outdoor & Trekking</strong><span>Autoridade geográfica Itamonte</span></div>
+      </button>
+      <button class="scen-btn" id="btn-s5" onclick="runScenario('pesca')">
+        <span class="scen-icon">🎣</span>
+        <div class="scen-text"><strong>Vertical Pesca</strong><span>Kit Mantiqueira</span></div>
+      </button>
+      <button class="scen-btn" id="btn-s6" onclick="runScenario('country')">
+        <span class="scen-icon">🤠</span>
+        <div class="scen-text"><strong>Country & Rural</strong><span>Moda regional Sul de MG</span></div>
+      </button>
+      <button class="scen-btn" id="btn-s7" onclick="runScenario('crise')">
+        <span class="scen-icon">⚠️</span>
+        <div class="scen-text"><strong>Gestão de crise de preço</strong><span>Concorrente dropa preço</span></div>
+      </button>
+      <button class="scen-btn" id="btn-s8" onclick="runScenario('sazonalidade')">
+        <span class="scen-icon">📅</span>
+        <div class="scen-text"><strong>Sazonalidade — inverno</strong><span>Jun-Set outdoor peak</span></div>
+      </button>
+      <button class="scen-btn" id="btn-s9" onclick="runScenario('conteudo')">
+        <span class="scen-icon">📸</span>
+        <div class="scen-text"><strong>Estratégia de conteúdo</strong><span>Instagram + TikTok + anúncios</span></div>
+      </button>
+      <button class="scen-btn" id="btn-s10" onclick="runScenario('preco')">
+        <span class="scen-icon">🧮</span>
+        <div class="scen-text"><strong>Calculadora de preço</strong><span>Margens por vertical</span></div>
+      </button>
+    </div>
+  </div>
+
+  <!-- CHAT -->
+  <div class="chat-area">
+    <div class="chat-log" id="chat-log">
+      <div class="msg system">
+        <div class="msg-avatar" style="background:#e8f5e9;">🌿</div>
+        <div class="msg-body">
+          <div class="msg-meta"><span class="msg-name" style="color:var(--green);">AgroPet Agente</span><span class="msg-ts">00:00</span><span class="msg-tag tag-meta">sistema</span></div>
+          <div class="msg-content">
+            <strong>AgroPet Tupinambas Digital Agent — inicializado.</strong><br><br>
+            Contexto carregado: Agro&Pet Tupinambas, Itamonte-MG, 7 verticais (Pet · Outdoor · Calçados · Country · Pesca · Ferramentaria · Jardim), DNA Mantiqueira / Agulhas Negras.<br><br>
+            Selecione um cenário na sidebar ou faça uma pergunta direta. O agente opera com o framework: <em>Diagnóstico → Posição → Oportunidade → Ação → Métrica → Risco</em>.
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="chat-input-row">
+      <textarea class="chat-input" id="chat-input" placeholder="Pergunte ao agente... ex: como lançar o Kit Agulhas Negras no ML? qual a estratégia para inverno?" rows="1"></textarea>
+      <button class="send-btn" onclick="sendUserMsg()">Enviar ↗</button>
+    </div>
+  </div>
+
+  <!-- RIGHT PANEL -->
+  <div class="right-panel">
+    <div class="rp-section">
+      <div class="rp-title">Verticais ativas</div>
+      <div class="vert-pill"><div class="dot" style="background:#2d6a4f;"></div><span class="name">Pet</span><span class="status" style="background:var(--green-pale);color:var(--green);" id="vst-pet">Prioridade</span></div>
+      <div class="vert-pill"><div class="dot" style="background:#c77800;"></div><span class="name">Outdoor</span><span class="status" style="background:var(--amber-pale);color:var(--amber);" id="vst-out">Prioridade</span></div>
+      <div class="vert-pill"><div class="dot" style="background:#1565c0;"></div><span class="name">Calçados</span><span class="status" style="background:var(--blue-pale);color:var(--blue);" id="vst-cal">Alta</span></div>
+      <div class="vert-pill"><div class="dot" style="background:#6a1b9a;"></div><span class="name">Country</span><span class="status" style="background:var(--purple-pale);color:var(--purple);" id="vst-cty">Média</span></div>
+      <div class="vert-pill"><div class="dot" style="background:#00695c;"></div><span class="name">Pesca</span><span class="status" style="background:var(--teal-pale);color:var(--teal);" id="vst-psc">Média</span></div>
+      <div class="vert-pill"><div class="dot" style="background:#78909c;"></div><span class="name">Ferramentaria</span><span class="status" style="background:var(--gray-pale);color:var(--gray);" id="vst-fer">Baixa</span></div>
+      <div class="vert-pill"><div class="dot" style="background:#26a69a;"></div><span class="name">Jardim</span><span class="status" style="background:var(--teal-pale);color:var(--teal);" id="vst-jar">Baixa</span></div>
+    </div>
+    <div class="rp-section">
+      <div class="rp-title">Decisões recentes</div>
+    </div>
+    <div class="rp-scroll" id="decisions-log">
+      <div class="log-mini">Agente inicializado. Nenhuma decisão registrada ainda.</div>
+    </div>
+  </div>
+
+</div><!-- /main -->
+
+<script>
+const SCENARIOS = {
+  mes1: {
+    phase: 'Fase 1 · Mês 1 — Fundação Digital',
+    kpis: { gmv:'R$ 0', ped:'0', skus:'25', status:'Iniciante', av:'—', mg:'—', dgmv:'meta R$25k mês 3', dped:'meta 80+/mês', dskus:'catálogo inicial', dstatus:'construindo', dav:'meta 4.7+', dmg:'meta 22%' },
+    msgs: [
+      {t:'diag', txt:'<strong>Diagnóstico dia 1:</strong> Agro&Pet Tupinambas, referência física em Itamonte, ainda sem presença em marketplaces. Zero reviews. Zero histórico digital. O diferencial da marca (DNA Mantiqueira + Agulhas Negras + mix multivertical) ainda não está comunicado digitalmente.'},
+      {t:'acao', txt:'<strong>Ação 1 — Abertura de contas:</strong> Registro ML (CNPJ + CNAE 4789-0/04 pet shop) e Shopee. Ativar Mercado Envios Coleta imediatamente. Configurar dados bancários, endereço de envio (Itamonte-MG) e política de devolução (7 dias, sem custo).'},
+      {t:'acao', txt:'<strong>Ação 2 — Catálogo inicial 25 SKUs:</strong> Top prioridade: Kit Agulhas Negras (bastão + gaiter + luva + snack) · Kit Pet na Trilha · Bota trekking impermeável · Kit Saúde Preventiva Cão · Antipulgas Simparic · Tapete higiênico 80un · Cana de pesca telescópica · Bota country couro · Ração Golden 15kg...'},
+      {t:'acao', txt:'<strong>Ação 3 — Fotos com cenário Mantiqueira:</strong> DIFERENCIAL CRÍTICO. Todas as fotos de outdoor devem ter trilha/montanha ao fundo. Botas de trekking fotografadas em pedra real do Itatiaia. Produtos pet em paisagem de altitude. Isso é impossível de replicar por seller urbano.'},
+      {t:'acao', txt:'<strong>Ação 4 — Template de título ML:</strong> "[Marca] [Produto] [Característica principal] [Animal/uso] [Qtd]". Ex: "Bastão Trekking Ajustável Alumínio Trilha Itatiaia Par + Ponteiras". Ex: "Bota Trilha Impermeável Masculina Trekking Montanhismo Cano Alto".'},
+      {t:'alert', txt:'<strong>Alerta configuração crítica:</strong> Na descrição de TODO anúncio de outdoor incluir: "Testado nas trilhas do Parque Nacional do Itatiaia · Vendido na loja referência de Itamonte-MG, porta de entrada para o Pico das Agulhas Negras." Isso é geolocalização de autoridade — elemento de confiança que aumenta conversão.'},
+      {t:'acao', txt:'<strong>Ação 5 — Pós-venda automatizado:</strong> D+3: "Olá! Sua compra Agro&Pet chegou bem? Somos a loja referência de Itamonte, base do Agulhas Negras. Qualquer dúvida, respondemos em 4h!" D+7: pedido de review. Meta: 20 reviews 4.7+ no primeiro mês.'},
+      {t:'meta', txt:'<strong>Meta mês 1:</strong> 25 SKUs cadastrados e otimizados · 30+ pedidos · 20 reviews ML 4.7+ · 0 reclamações sem resolução · Fotos profissionais 100% dos produtos · Resposta a perguntas em menos de 2h. Protocolo de review negativo: resolução + reembolso em menos de 2h.'}
+    ]
+  },
+  kit: {
+    phase: 'White Space #1 · Kit Agulhas Negras',
+    kpis: { gmv:'R$ 0', ped:'0', skus:'1', status:'Novo SKU', av:'—', mg:'38%', dgmv:'projeção R$12k/mês só deste kit', dped:'~30 un/mês esperado', dskus:'produto âncora', dstatus:'lançamento', dav:'meta 4.9', dmg:'margem alvo kit' },
+    msgs: [
+      {t:'diag', txt:'<strong>Análise do white space:</strong> "Kit para subir o Pico das Agulhas Negras" não existe em nenhum seller do Mercado Livre com autoridade geográfica real. Há bastões, há botas, há luvas — mas nenhum seller vende o kit COMPLETO com a narrativa "equipado aqui, conquistou lá" de quem está fisicamente em Itamonte.'},
+      {t:'op', txt:'<strong>Composição do Kit Agulhas Negras — versão essencial:</strong><br>• Bastão de trekking ajustável par (CMV ~R$90)<br>• Gaiter / polaina impermeável (CMV ~R$35)<br>• Luva de frio/montanha (CMV ~R$22)<br>• Kit snack de trilha 3 barras (CMV ~R$18)<br>• Bandana Agro&Pet Tupinambas (CMV ~R$8)<br>CMV total: R$173 + frete R$28 = R$201 base.'},
+      {t:'op', txt:'<strong>Precificação:</strong> CMV+frete R$201 ÷ (1-0,14 taxa ML) × (1+0,38 margem) = R$322. Arredondar para R$319,90. <em>Comparação: comprar os itens separados custaria R$390-420.</em> Comunicar: "Kit completo com R$80 de economia vs. comprar separado."'},
+      {t:'acao', txt:'<strong>Título do anúncio:</strong> "Kit Trekking Completo Bastão + Gaiter + Luva + Snack Trilha Montanhismo Agulhas Negras Itatiaia — Agro&Pet Tupinambas"'},
+      {t:'acao', txt:'<strong>Descrição âncora:</strong> Abertura obrigatória: "Este kit foi montado pela equipe da Agro&Pet Tupinambas, loja referência em Itamonte-MG — a cidade-base para subir o Pico das Agulhas Negras (2.791m), o 5º pico mais alto do Brasil. Testamos cada item em campo. Equipamos aventureiros reais."'},
+      {t:'acao', txt:'<strong>Variações do kit:</strong><br>• Kit Essencial (R$319,90) — descrito acima<br>• Kit Completo (R$479,90) — + mochila 20L + capa de chuva<br>• Kit Iniciante (R$189,90) — só bastão + luva + snack (entrada mais acessível)<br>Três tickets diferentes = captura de segmentos diferentes de comprador.'},
+      {t:'acao', txt:'<strong>Foto principal:</strong> Produto em cima de rocha real do Itatiaia ou Pico do Papagaio ao fundo. Se possível: foto de alpinista real usando os itens do kit em trilha. Nenhum seller em SP ou RJ consegue ter essa foto original.'},
+      {t:'alert', txt:'<strong>Parceria de conteúdo:</strong> Contatar guias credenciados do Parque Nacional do Itatiaia para fazer reels/fotos usando o kit. Custo: desconto em produtos ou permuta. ROI: conteúdo autêntico que nenhum concorrente pode gerar.'},
+      {t:'meta', txt:'<strong>Projeção 90 dias:</strong> 30 unidades/mês · GMV R$9.600/mês só deste SKU · Margem líquida 38% · Avaliação 4.9 (comprador engajado com produto único) · Nenhum concorrente direto com mesma proposta. Expandir para Kit Agulhas Negras Premium após 50 avaliações.'}
+    ]
+  },
+  pet: {
+    phase: 'Vertical Pet · Saúde e Recorrência',
+    kpis: { gmv:'R$ 12k', ped:'80', skus:'10', status:'Silver em progresso', av:'4.8', mg:'24%', dgmv:'+40% projeção mês 4', dped:'meta 200/mês', dskus:'+8 novos pet', dstatus:'rumo Gold', dav:'manter 4.8+', dmg:'meta 26%' },
+    msgs: [
+      {t:'diag', txt:'<strong>Diagnóstico vertical pet:</strong> Mercado pet e-commerce R$1,3bi no 1T24 com ticket médio R$154,70. PetLove+Petz+Cobasi detêm 77,9% — mas 22,1% do mercado ainda está fragmentado entre sellers no ML/Shopee. Oportunidade clara para a Agro&Pet com diferencial de protocolo veterinário.'},
+      {t:'acao', txt:'<strong>Estratégia de saúde preventiva:</strong> Kit bundled "Proteção Total Cão Pequeno" = Simparic 3cp (antipulgas) + Drontal 2cp (vermífugo) + Suplemento Ômega 3 60cp. CMV kit: R$84. Preço: R$159,90. Vs. compra separada: R$190+. Economia: R$30+ comunicada claramente.'},
+      {t:'acao', txt:'<strong>Guia veterinário como diferencial:</strong> Criar PDF "Protocolo de Saúde Preventiva por Porte e Faixa de Vida" (assinado por veterinário parceiro de Itamonte com CRMV). Anexar nas descrições de todos os produtos de saúde. Isso cria autoridade que Shopee genérico não tem.'},
+      {t:'acao', txt:'<strong>Top SKUs pet para ML:</strong><br>• Simparic 3cp cão até 10kg — R$149,90 · margem 24%<br>• Simparic 3cp cão 10-20kg — R$169,90<br>• Bravecto 1cp cão 10-20kg — R$185,00<br>• Drontal cão até 10kg 2cp — R$38,50 · margem 40%<br>• Ração Golden raça pequena 15kg — R$219,00<br>• Suplemento ômega 3 cão 60cp — R$45,90 · margem 45%'},
+      {t:'acao', txt:'<strong>Top SKUs pet para Shopee (volume/elástico):</strong><br>• Tapete higiênico 80un — R$62,90 · penetração de preço<br>• Kit Higiene Gato (areia 4kg + lenços 40un) — R$54,90<br>• Arranhador gato tapete 60x50cm — R$42,90<br>• Brinquedo interativo cão mordedor — R$28,90<br>Frete grátis em kits acima de R$79.'},
+      {t:'acao', txt:'<strong>WHITE SPACE PET EXCLUSIVO — "Kit Pet na Trilha":</strong> Nenhum seller combina gear de outdoor com pet. Itamonte tem trilhas onde turistas levam seus cães. Kit: Peitoral ergonômico L + Bolsa transportadora cão até 8kg + Repelente canino spray + Snack energético para cão + Coleira refletiva. Ticket: R$189,90. Margem: 40%.'},
+      {t:'meta', txt:'<strong>KPIs pet mês 6:</strong> 200 pedidos/mês · GMV R$35k · Avaliação 4.8+ · 5 SKUs no Envios Full · Protocolo vet em 100% dos anúncios de saúde · Kit Pet na Trilha: 20+ vendas/mês como white space exclusivo.'}
+    ]
+  },
+  outdoor: {
+    phase: 'Vertical Outdoor · Autoridade Itamonte',
+    kpis: { gmv:'R$ 0', ped:'0', skus:'8', status:'Lançamento', av:'—', mg:'35%', dgmv:'projeção R$18k/mês', dped:'meta 55 un/mês', dskus:'linha trekking', dstatus:'novo nicho', dav:'meta 4.9', dmg:'margem média outdoor' },
+    msgs: [
+      {t:'diag', txt:'<strong>Análise outdoor:</strong> Itamonte é a meca do montanhismo brasileiro. Pico das Agulhas Negras (2.791m), Serra Fina, Prateleiras, Parque Nacional do Itatiaia. Fluxo turístico de SP, RJ, BH. A Agro&Pet está literalmente no ponto de chegada desses aventureiros. Nenhum seller no ML tem essa autoridade geográfica real.'},
+      {t:'diag', txt:'<strong>Análise de concorrência outdoor no ML:</strong> Decathlon (preço baixo, sem storytelling local) · Sellers genéricos SP/RJ (fotos de estúdio, sem conexão com Itatiaia) · Lojas especializadas grandes (ticket alto, sem mix com pet/pesca). GAP: curadoria regional + autoridade real de campo.'},
+      {t:'acao', txt:'<strong>SKUs prioritários outdoor:</strong><br>• Bastão trekking ajustável alumínio par — ML — R$219,90 · margem 42%<br>• Gaiter / polaina impermeável P/M/G — ML — R$89,90 · margem 45%<br>• Capa de chuva impermeável (5.000mm) — ML/Shopee — R$129,90<br>• Luva de frio / montanha M/G — ML/Shopee — R$79,90<br>• Mochila trekking 30L — ML — R$279,90 · margem 35%<br>• Lanterna frontal 300 lúmens — ML/Shopee — R$89,90'},
+      {t:'acao', txt:'<strong>Conteúdo técnico de autoridade (incluir em TODAS as descrições de outdoor):</strong><br>"Este produto foi selecionado pela equipe da Agro&Pet Tupinambas em Itamonte-MG. Testamos em campo nas trilhas do Parque Nacional do Itatiaia. Quando você nos pergunta o que levar para subir o Agulhas Negras, é isso que indicamos."'},
+      {t:'acao', txt:'<strong>Guia "Trilhas do Itatiaia por Dificuldade" — PDF na descrição:</strong><br>• Trilha Fácil (até 800m alt): qual tênis/calçado, o que levar<br>• Trilha Moderada (800-1.500m): bastão obrigatório, gaiter recomendado<br>• Trilha Difícil / Alta Montanha (1.500m+): equipamento completo, roupa térmica<br>Este conteúdo captura busca orgânica e aumenta conversão 30-40%.'},
+      {t:'acao', txt:'<strong>Sazonalidade outdoor Itamonte:</strong><br>• Jun-Set: inverno/frio = PICO de demanda por roupas térmicas, luvas, capas. Estoque 3x antes de junho.<br>• Dez-Mar: verão = trilhas mais acessíveis = mais iniciantes. Kit Iniciante Agulhas Negras como produto âncora.<br>• Feriados prolongados: estoque adicional (Carnaval, Tiradentes, Corpus Christi).'},
+      {t:'alert', txt:'<strong>Parceria de distribuição offline→online:</strong> Pousadas e hostels de Itamonte como pontos de indicação QR Code. Guia pede algo na trilha, loja não tem, turista escaneia QR, compra online para entregar em casa. Cada turista que passa por Itamonte é um cliente em potencial da loja digital.'},
+      {t:'meta', txt:'<strong>Projeção outdoor 6 meses:</strong> 55 pedidos/mês · GMV R$18k/mês · Margem média 37% (acima do pet) · Nenhum concorrente com mesma autoridade geográfica · Kit Agulhas Negras como produto mais avaliado da loja.'}
+    ]
+  },
+  pesca: {
+    phase: 'Vertical Pesca · Kit Mantiqueira',
+    kpis: { gmv:'R$ 0', ped:'0', skus:'6', status:'Novo nicho', av:'—', mg:'42%', dgmv:'projeção R$8k/mês', dped:'meta 35/mês', dskus:'linha pesca', dstatus:'entrada', dav:'meta 4.8', dmg:'margem média pesca' },
+    msgs: [
+      {t:'diag', txt:'<strong>Diagnóstico pesca:</strong> Itamonte tem a Represa dos Braga (6km do centro), rios da Mantiqueira, e a região é destino de pesca esportiva de truta e cará. Concorrência de pesca no ML é fragmentada. Nenhum seller tem curadoria "pesca na Serra da Mantiqueira". White space de conteúdo claro.'},
+      {t:'acao', txt:'<strong>Kit Pesca Mantiqueira — produto âncora:</strong><br>• Cana telescópica 1,8m (CMV R$28)<br>• Molinete básico 2000 (CMV R$35)<br>• Kit iscas artificiais sortidas 10un (CMV R$22)<br>• Linha 0,30mm 100m (CMV R$12)<br>• Anzóis cartela 30un (CMV R$8)<br>CMV kit: R$105 + frete R$18 = R$123. Preço: R$229,90. Margem: 40%.'},
+      {t:'acao', txt:'<strong>Guia "Pesca na Mantiqueira" — PDF na descrição:</strong><br>• Espécies: truta arco-íris, cará, lambari, tilápia<br>• Melhores pontos: Represa dos Braga, Rio Aiuruoca, Rio Verde<br>• Melhor época: inverno (água mais fria = truta ativa) e fevereiro-março (lambari)<br>• Técnica recomendada por espécie<br>Este guia captura busca orgânica de pescadores que buscam a região.'},
+      {t:'acao', txt:'<strong>SKUs pesca para lançamento:</strong><br>• Cana telescópica 1,8m — Shopee/ML — R$59,90 · margem 45%<br>• Cana telescópica 2,4m — ML — R$89,90<br>• Kit molinete + cana — ML — R$169,90 · margem 38%<br>• Iscas artificiais kit 20 unidades — Shopee — R$49,90<br>• Estojo organizador iscas — Shopee — R$34,90<br>• Roupa camiseta pesca — ML — R$79,90'},
+      {t:'meta', txt:'<strong>Projeção 90 dias:</strong> 35 pedidos/mês pesca · GMV R$8k/mês · Margem média 42% (alta por nicho sem guerra de preço) · Nenhum concorrente com curadoria regional da Mantiqueira · Expandir para kit camping+pesca em 6 meses.'}
+    ]
+  },
+  country: {
+    phase: 'Vertical Country · DNA Sul de MG',
+    kpis: { gmv:'R$ 0', ped:'0', skus:'8', status:'Lançamento', av:'—', mg:'44%', dgmv:'projeção R$10k/mês', dped:'meta 40/mês Shopee', dskus:'linha country', dstatus:'entrada', dav:'meta 4.8', dmg:'margem alta moda' },
+    msgs: [
+      {t:'diag', txt:'<strong>Diagnóstico country:</strong> Moda country cresce forte no digital brasileiro — especialmente na Shopee para público de cidades médias e interior do Sul/Sudeste/Centro-Oeste. A Agro&Pet tem credencial real de loja de interior com cultura rural. "Sul de Minas · Mantiqueira · Autêntico" é um diferencial de posicionamento que marcas urbanas não conseguem imitar.'},
+      {t:'acao', txt:'<strong>SKUs country prioritários — Shopee:</strong><br>• Camisa xadrez flanela masculina P/M/G/GG — R$89,90 · margem 45%<br>• Camisa xadrez flanela feminina — R$84,90<br>• Bandana country sortida — R$19,90 · alta rotatividade Shopee<br>• Cinto couro artesanal — R$99,90 · margem 52%<br>• Chapéu palha aba larga — R$39,90 · compra por impulso<br>• Colete jeans masculino — R$129,90'},
+      {t:'acao', txt:'<strong>SKUs country ML (ticket alto):</strong><br>• Bota country masculina couro — R$289,90 · margem 38%<br>• Bota country feminina — R$259,90<br>• Chapéu feltro — R$129,90 · margem 48%<br>• Kit look completo country (camisa + cinto + lenço) — R$179,90 · bundle com 12% desconto'},
+      {t:'acao', txt:'<strong>Posicionamento nas fotos e descrições:</strong> Todas as roupas country fotografadas em cenário rural real — curral, pasto, porteira, pedra de campo. Modelo com botas na terra, não em estúdio branco. Copy: "Feito para o campo. Orgulho do Sul de Minas."'},
+      {t:'alert', txt:'<strong>Sazonalidade country:</strong> Festas juninas (maio-julho) = pico absoluto de demanda. Estoque 4x antes de maio. Rodeio, vaquejada, shows sertanejos = ciclos secundários. Criar campanha "Arraiá Agro&Pet" para o período.'},
+      {t:'meta', txt:'<strong>Projeção 3 meses country:</strong> 40 pedidos/mês · GMV R$10k/mês · Margem média 44% (maior margem de todas as verticais) · Shopee como canal principal · Expandir para chapéus, meias country e acessórios após validação.'}
+    ]
+  },
+  crise: {
+    phase: 'Cenário Crise · Concorrente dropa preço',
+    kpis: { gmv:'R$ 45k', ped:'320', skus:'60', status:'Silver', av:'4.8', mg:'22%', dgmv:'sob pressão', dped:'-25% risco', dskus:'estável', dstatus:'manter', dav:'defender 4.8', dmg:'piso 15%' },
+    msgs: [
+      {t:'crise', txt:'<strong>Evento:</strong> Concorrente "PetShopOnlineSP" derrubou preço do Bastão de Trekking de R$219 para R$159 (-27%). Risco de perda de Buy Box na categoria outdoor.'},
+      {t:'diag', txt:'<strong>Diagnóstico imediato:</strong> (1) Concorrente tem foto de estúdio — sem autoridade de campo. (2) Avaliação deles: 4.3 vs nossa 4.8. (3) Prazo entrega: D+5 vs. nosso D+2 via Full. (4) Margem deles a R$159 deve ser negativa — provavelmente liquidação de estoque. Aguardar 7 dias sem mover preço.'},
+      {t:'acao', txt:'<strong>Ação 1 — Reforçar diferencial de conteúdo:</strong> Atualizar anúncio com destaque: "⭐ 4.8 estrelas (200+ avaliações) · Entrega 1–2 dias · Testado no Itatiaia · Suporte da equipe de Itamonte." A diferença de percepção de valor precisa ser visível antes do preço.'},
+      {t:'diag', txt:'<strong>Dia 7 — diagnóstico de volume:</strong> Queda de 22% nas vendas de bastões. Buy Box perdido em 35% das impressões. Concorrente ainda mantém o preço — não é liquidação.'},
+      {t:'acao', txt:'<strong>Decisão de preço:</strong> Calcular piso: CMV R$90 + frete R$22 + taxa ML 14% + overhead R$10 = custo total R$135. Margem mínima 15%: preço mínimo R$159. Ajustar de R$219 para R$189 (-14%). Ainda R$30 acima do concorrente mas com diferencial de autoridade. NÃO ir para R$159 — margem zero.'},
+      {t:'acao', txt:'<strong>Contraofensiva — lançar bundle:</strong> "Kit Trekking Mantiqueira" = Bastão + Gaiter + Luva por R$329,90 (vs. R$389 separados). Redirecionar 40% dos ads de bastão para o kit. O concorrente não tem gaiter nem luva no catálogo — impossível replicar o bundle.'},
+      {t:'alert', txt:'<strong>Lição estrutural:</strong> Bastão representa 18% do GMV outdoor — dependência excessiva de 1 SKU. Ação preventiva: ampliar mix outdoor para que nenhum SKU represente mais de 12% do faturamento da vertical. Próximos 30 dias: lançar 4 novos SKUs outdoor.'},
+      {t:'meta', txt:'<strong>Resolução esperada em 21 dias:</strong> SE volume recuperar >85% após ajuste de preço: funcionou. SE concorrente esgotar estoque em 30 dias: retornar R$219 gradualmente. Meta: defender R$35k/mês GMV total durante a crise.'}
+    ]
+  },
+  sazonalidade: {
+    phase: 'Sazonalidade · Inverno Peak (Jun-Set)',
+    kpis: { gmv:'R$ 55k', ped:'380', skus:'70', status:'Gold em progresso', av:'4.8', mg:'26%', dgmv:'meta R$90k jun-ago', dped:'estimativa 600+/mês', dskus:'+20 SKUs inverno', dstatus:'rumo Gold', dav:'manter 4.8', dmg:'outdoor 35-45%' },
+    msgs: [
+      {t:'diag', txt:'<strong>Análise sazonalidade:</strong> Jun-Set = inverno na Serra da Mantiqueira = pico máximo de fluxo turístico em Itamonte (clima frio, neve eventual no planalto do Itatiaia). Este período representa ~40% do faturamento anual de outdoor para quem tem autoridade de campo na região.'},
+      {t:'acao', txt:'<strong>30-45 dias antes de junho — preparação de estoque:</strong><br>• Roupas térmicas: estoque 3x normal<br>• Luvas de frio/montanha: 4x<br>• Capas de chuva impermeáveis: 3x<br>• Gaiter/polaina: 3x<br>• Meias de lã e trekking: 4x<br>• Snacks de trilha: 5x (maior volume = menor peso por unidade)</br>Regra: produto sazonal outdoor nunca pode zerar entre jun-set.'},
+      {t:'acao', txt:'<strong>Campanha "Temporada Mantiqueira":</strong><br>• Lançar semana 1 de junho: kit especial temporada com banner ML e Shopee<br>• Anúncios patrocinados: dobrar investimento (R$3.000/mês jun-ago)<br>• Instagram: série "Aventura no Inverno de Itamonte" — um post por dia com produto em contexto de frio e montanha<br>• Desconto exclusivo para quem compra combo: roupa térmica + bota de trekking.'},
+      {t:'acao', txt:'<strong>Categoria pet no inverno:</strong> Animais com frio = demanda por roupas pet, camas aquecidas, cobertores. Lançar: "Cama Ortopédica Pet + Cobertor" como kit inverno pet. Ticket: R$129,90. Sazonal mas com boa margem.'},
+      {t:'acao', txt:'<strong>Pesca no inverno:</strong> Inverno = época da truta arco-íris no Itatiaia e rios da Mantiqueira. Criar post "Melhor época para pescar truta na Mantiqueira — inverno é agora" com link para Kit Pesca Mantiqueira. SEO orgânico de longo prazo.'},
+      {t:'alert', txt:'<strong>Alerta logístico inverno:</strong> Pico de vendas = risco de SLA comprometido. Contratar apoio logístico temporário (2 pessoas) em junho-agosto. Envios Full para os 10 SKUs de maior giro de inverno garante entrega rápida mesmo com volume alto.'},
+      {t:'meta', txt:'<strong>Meta temporada inverno (jun-set):</strong> GMV mensal R$90k em agosto (pico) · Nenhum SKU zerado de estoque · 4.8+ avaliação mantida · ROAS ads 5x+ · Status Mercado Líder Gold conquistado até setembro.'}
+    ]
+  },
+  conteudo: {
+    phase: 'Estratégia de Conteúdo · Instagram + ML',
+    kpis: { gmv:'—', ped:'—', skus:'—', status:'—', av:'—', mg:'—', dgmv:'conteúdo = aquisição', dped:'', dskus:'', dstatus:'', dav:'', dmg:'' },
+    msgs: [
+      {t:'diag', txt:'<strong>Por que conteúdo é crítico para a Agro&Pet Tupinambas:</strong> A empresa tem algo que nenhum seller no Brasil tem: localização única (base do Agulhas Negras), mix único (pet+outdoor+pesca+country) e narrativa real (não é uma marca inventada, é a loja de uma cidade real). Conteúdo converte isso em tráfego orgânico e autoridade.'},
+      {t:'acao', txt:'<strong>Calendário Instagram — estrutura semanal:</strong><br>• Seg: Produto em contexto (foto produto real em trilha/campo/rio) + link ML bio<br>• Qua: Conteúdo educativo (dica de trilha, como escolher bota, protocolo vet) + CTA suave<br>• Sex: Behind the scenes (loja, equipe, chegada de produto, Itamonte) + Stories diários<br>• Dom: Review de cliente / turista que comprou ou visitou'},
+      {t:'acao', txt:'<strong>Reels de alta conversão:</strong><br>• "O que levar para subir o Agulhas Negras" — formato lista (30s)<br>• "5 erros de quem leva o cão na trilha" — formato educativo (45s)<br>• "Unboxing Kit Agulhas Negras" — formato produto (60s)<br>• "Chegou inverno em Itamonte — o que muda na loja" — formato vlog<br>Frequência: 2 Reels/semana. Consistência > qualidade no começo.'},
+      {t:'acao', txt:'<strong>TikTok — público jovem aventureiro:</strong> Formatos virais: "POV: você na base do Agulhas Negras sem equipamento" (assustador/cômico → solução = kit da loja) · "Ranking de trilhas do Itatiaia por dificuldade" · "O que NÃO levar na trilha" · "Meu pet na Serra da Mantiqueira". Call to action: "Link na bio para o kit completo no ML."'},
+      {t:'acao', txt:'<strong>Otimização de anúncios ML com conteúdo:</strong><br>• Descrição sempre abre com história de Itamonte (2-3 frases)<br>• PDF técnico como "manual do produto" junto ao anúncio<br>• Resposta a TODAS as perguntas em menos de 2h — cada resposta é conteúdo SEO<br>• Usar fotos reais de clientes (UGC) nas listagens após 30 dias'},
+      {t:'alert', txt:'<strong>Métrica de conteúdo que importa:</strong> Não é like nem seguidores. É: quantas visitas aos anúncios vieram de bio do Instagram? Quantas vendas originaram de quem perguntou algo nos comentários? Configurar UTM nos links de bio para rastrear.'},
+      {t:'meta', txt:'<strong>Meta de conteúdo em 6 meses:</strong> Instagram 2.000+ seguidores relevantes · 10% das vendas ML originadas por conteúdo orgânico · Cada produto top 5 com ao menos 1 vídeo demonstrativo · Conta TikTok ativa com 3 posts/semana.'}
+    ]
+  },
+  preco: {
+    phase: 'Calculadora · Margens por Vertical',
+    kpis: { gmv:'—', ped:'—', skus:'—', status:'—', av:'—', mg:'—', dgmv:'simulação', dped:'', dskus:'', dstatus:'', dav:'', dmg:'' },
+    msgs: [
+      {t:'diag', txt:'<strong>Fórmula base de precificação:</strong><br>Preço Venda = (CMV + frete origem) ÷ (1 − taxa_marketplace) × (1 + margem_alvo)<br><br>Taxas de referência 2026:<br>• ML pet/outdoor: 12–16% (médio 14%)<br>• Shopee pet/moda: 8–14% (médio 11%)<br>• Amazon outdoor: 8–15% + FBA<br>Frete médio por peso: até 500g = R$12 · 500g-2kg = R$18 · 2-10kg = R$25 · 10kg+ = R$38'},
+      {t:'op', txt:'<strong>Exemplo 1 — Bastão de Trekking:</strong><br>CMV R$90 + frete R$22 = base R$112<br>Taxa ML 14%: divisor 0,86<br>Margem alvo 40%: multiplicador 1,40<br><strong style="color:var(--green);">Preço = (R$112 ÷ 0,86) × 1,40 = R$182,33 → R$179,90</strong><br>Lucro líquido por unidade: R$51,70'},
+      {t:'op', txt:'<strong>Exemplo 2 — Tapete Higiênico 80un (produto elástico):</strong><br>CMV R$28 + frete R$14 = base R$42<br>Taxa Shopee 11%: divisor 0,89<br>Estratégia penetração, margem 18%: multiplicador 1,18<br><strong style="color:var(--amber);">Preço = (R$42 ÷ 0,89) × 1,18 = R$55,70 → R$54,90</strong><br>Lucro líquido por unidade: R$8,18 (baixo, mas volume compensa)'},
+      {t:'op', txt:'<strong>Exemplo 3 — Kit Agulhas Negras (bundle):</strong><br>CMV total R$173 + frete R$28 = base R$201<br>Taxa ML 14%: divisor 0,86<br>Margem alvo 38%: multiplicador 1,38<br><strong style="color:var(--blue);">Preço = (R$201 ÷ 0,86) × 1,38 = R$322,60 → R$319,90</strong><br>Lucro líquido por unidade: R$90,82 — o melhor SKU da loja'},
+      {t:'op', txt:'<strong>Exemplo 4 — Bota Country Couro:</strong><br>CMV R$140 + frete R$20 = base R$160<br>Taxa ML 14%: divisor 0,86<br>Margem alvo 38%: multiplicador 1,38<br><strong style="color:var(--purple);">Preço = (R$160 ÷ 0,86) × 1,38 = R$256,70 → R$259,90</strong><br>Lucro líquido: R$72,58'},
+      {t:'alert', txt:'<strong>Regras de margem mínima por vertical:</strong><br>• Pet saúde (inelástico): mínimo 22%<br>• Pet higiene (elástico): mínimo 15%<br>• Outdoor / trekking: mínimo 30%<br>• Calçados: mínimo 28%<br>• Country / moda: mínimo 35%<br>• Pesca: mínimo 32%<br>Abaixo do mínimo = não lançar o SKU.'},
+      {t:'meta', txt:'<strong>Meta de margem líquida consolidada:</strong> Mês 1-3: 20% (fase de penetração) · Mês 4-6: 24% (otimização de mix) · Mês 7-12: 27%+ (outdoor e country com peso maior no mix). Outdoor tem 2x a margem de pet em média — é o principal alavancador de rentabilidade da Agro&Pet Tupinambas.'}
+    ]
+  }
+};
+
+let simRunning = false;
+let stepTimeout = null;
+let tickSec = 0;
+
+function ts() {
+  tickSec++;
+  const m = Math.floor(tickSec/60).toString().padStart(2,'0');
+  const s = (tickSec%60).toString().padStart(2,'0');
+  return m+':'+s;
+}
+
+function addMsg(type, text, tag) {
+  const log = document.getElementById('chat-log');
+  const tagMap = { diag:'diagnóstico', acao:'ação', alert:'alerta', crise:'crise', meta:'meta', op:'operação', user:'você', sys:'sistema' };
+  const clsMap = { diag:'tag-diag', acao:'tag-acao', alert:'tag-alert', crise:'tag-crise', meta:'tag-meta', op:'tag-op', user:'tag-user', sys:'tag-meta' };
+  const avatarMap = { user:'🙋', sys:'🌿', diag:'🔍', acao:'⚡', alert:'⚠️', crise:'🔴', meta:'🎯', op:'🔧' };
+  const isUser = (type==='user');
+  const div = document.createElement('div');
+  div.className = 'msg ' + (isUser ? 'user' : '');
+  div.innerHTML = `
+    <div class="msg-avatar" style="background:${isUser?'#e8f5e9':'#f5f5f5'};">${avatarMap[tag]||'🌿'}</div>
+    <div class="msg-body">
+      <div class="msg-meta">
+        <span class="msg-name" style="color:${isUser?'var(--blue)':'var(--green)'};">${isUser?'Você':'AgroPet Agente'}</span>
+        <span class="msg-ts">${ts()}</span>
+        <span class="msg-tag ${clsMap[tag]||'tag-meta'}">${tagMap[tag]||tag}</span>
+      </div>
+      <div class="msg-content">${text}</div>
+    </div>`;
+  log.appendChild(div);
+  log.scrollTop = log.scrollHeight;
+  addDecision(tag, text);
+}
+
+function addDecision(tag, text) {
+  const dl = document.getElementById('decisions-log');
+  const plain = text.replace(/<[^>]+>/g,' ').replace(/\s+/g,' ').trim().substring(0,60)+'...';
+  const tagLabels = {acao:'✅ Ação',alert:'⚠️ Alerta',meta:'🎯 Meta',crise:'🔴 Crise',diag:'🔍 Diag.',op:'🔧 Op.'};
+  const item = document.createElement('div');
+  item.className = 'log-mini';
+  item.innerHTML = `<strong>${tagLabels[tag]||'📝'}</strong> ${plain}`;
+  if (dl.firstChild && dl.firstChild.textContent.includes('inicializado')) dl.innerHTML = '';
+  dl.insertBefore(item, dl.firstChild);
+  if (dl.children.length > 12) dl.removeChild(dl.lastChild);
+}
+
+function updateKPIs(k) {
+  const set = (id, v) => { const el = document.getElementById(id); if(el) el.textContent = v; };
+  set('kv-gmv',k.gmv); set('kv-ped',k.ped); set('kv-skus',k.skus);
+  set('kv-status',k.status); set('kv-avaliacao',k.av); set('kv-margem',k.mg);
+  set('kd-gmv',k.dgmv||''); set('kd-ped',k.dped||''); set('kd-skus',k.dskus||'');
+  set('kd-status',k.dstatus||''); set('kd-av',k.dav||''); set('kd-mg',k.dmg||'');
+}
+
+function runScenario(key) {
+  if (simRunning) { clearTimeout(stepTimeout); simRunning = false; }
+  const sc = SCENARIOS[key];
+  if (!sc) return;
+  document.querySelectorAll('.scen-btn').forEach(b => b.classList.remove('active'));
+  const btn = document.getElementById('btn-s' + ['mes1','kit','pet','outdoor','pesca','country','crise','sazonalidade','conteudo','preco'].indexOf(key)+1);
+  if (btn) btn.classList.add('active');
+  document.getElementById('top-phase').textContent = sc.phase;
+  document.getElementById('chat-log').innerHTML = '';
+  tickSec = 0;
+  updateKPIs(sc.kpis);
+  addMsg('system', `<strong>Cenário iniciado:</strong> ${sc.phase}`, 'sys');
+  simRunning = true;
+  let i = 0;
+  function next() {
+    if (i >= sc.msgs.length) { simRunning = false; addMsg('system', 'Cenário concluído. Faça uma pergunta ou selecione outro cenário.', 'meta'); return; }
+    const m = sc.msgs[i];
+    addMsg('agent', m.txt, m.t);
+    i++;
+    stepTimeout = setTimeout(next, 900);
+  }
+  setTimeout(next, 300);
+}
+
+function sendUserMsg() {
+  const inp = document.getElementById('chat-input');
+  const q = inp.value.trim();
+  if (!q) return;
+  inp.value = '';
+  addMsg('user', q, 'user');
+  setTimeout(() => {
+    const typing = document.createElement('div');
+    typing.className = 'msg'; typing.id = 'typing-msg';
+    typing.innerHTML = `<div class="msg-avatar" style="background:#f5f5f5;">🌿</div><div class="msg-body"><div class="msg-meta"><span class="msg-name" style="color:var(--green);">AgroPet Agente</span></div><div class="msg-content"><span class="typing-dot"></span><span class="typing-dot"></span><span class="typing-dot"></span></div></div>`;
+    document.getElementById('chat-log').appendChild(typing);
+    document.getElementById('chat-log').scrollTop = 999999;
+    setTimeout(() => {
+      typing.remove();
+      const resp = generateResponse(q);
+      addMsg('agent', resp.text, resp.tag);
+    }, 1200);
+  }, 200);
+}
+
+function generateResponse(q) {
+  const ql = q.toLowerCase();
+  if (ql.includes('agulhas') || ql.includes('kit trekking') || ql.includes('bastão') || ql.includes('trilha')) {
+    return { tag:'acao', text: '<strong>Kit Agulhas Negras — análise:</strong> Produto âncora da vertical outdoor. CMV ~R$173 + frete R$28 = base R$201. Preço recomendado: R$319,90 (margem 38%). Título ML: "Kit Trekking Completo Bastão + Gaiter + Luva + Snack Trilha Montanhismo Agulhas Negras Itatiaia". Diferencial incopiável: foto real em campo + texto "Testado no Itatiaia pela equipe de Itamonte". Nenhum seller urbano replicará isso.' };
+  }
+  if (ql.includes('pet') && (ql.includes('trilha') || ql.includes('aventura'))) {
+    return { tag:'acao', text: '<strong>Kit Pet na Trilha — white space único:</strong> Peitoral ergonômico + bolsa transportadora + repelente canino + snack de trilha + coleira refletiva. CMV ~R$95 + frete R$22 = base R$117. Preço: R$189,90 (margem 40%). Este produto não existe com autoridade de Itamonte no marketplace. Descrição: "Para quem leva o melhor companheiro nas trilhas do Itatiaia."' };
+  }
+  if (ql.includes('inverno') || ql.includes('junho') || ql.includes('jul') || ql.includes('agosto') || ql.includes('frio')) {
+    return { tag:'alert', text: '<strong>Preparação inverno:</strong> Itamonte tem fluxo máximo de turistas jun-set. 30-45 dias antes: triplicar estoque de roupas térmicas, luvas, capas. Dobrar investimento em ads (R$3.000/mês). Criar campanha "Temporada Mantiqueira" com kit especial. Inverno representa ~40% do GMV anual outdoor. Não pode ter ruptura de estoque em julho.' };
+  }
+  if (ql.includes('preço') || ql.includes('precificar') || ql.includes('margem') || ql.includes('custo')) {
+    return { tag:'op', text: '<strong>Fórmula:</strong> Preço = (CMV + frete) ÷ (1 − taxa) × (1 + margem). Taxas: ML 14%, Shopee 11%. Margens mínimas: outdoor 30%, pet saúde 22%, calçados 28%, country 35%. Exemplo bota trekking: CMV R$140 + frete R$20 = R$160. Divisor 0,86 (ML). Margem 38%. Preço = R$256,70 → R$259,90. Lucro líquido: R$72,58.' };
+  }
+  if (ql.includes('instagram') || ql.includes('tiktok') || ql.includes('conteúdo') || ql.includes('redes')) {
+    return { tag:'acao', text: '<strong>Conteúdo estratégico:</strong> 3 tipos de post que convertem para a Agro&Pet: (1) Produto em contexto real de trilha/campo — diferencial absoluto. (2) Guia técnico ("o que levar no Agulhas Negras") — captura busca intencional. (3) Bastidores da loja em Itamonte — humaniza a marca. Frequência mínima: 4 posts/semana Instagram + 2 Reels. Bio: link direto para loja ML.' };
+  }
+  if (ql.includes('pesca') || ql.includes('rio') || ql.includes('represa') || ql.includes('truta')) {
+    return { tag:'acao', text: '<strong>Vertical pesca — diferencial Mantiqueira:</strong> Represa dos Braga (6km de Itamonte), Rio Aiuruoca, Rio Verde — espécies: truta arco-íris, cará, lambari. Kit Pesca Mantiqueira: cana + molinete + iscas. CMV R$105. Preço: R$229,90 (margem 40%). Guia "Melhor época para pesca de truta no Itatiaia" como conteúdo âncora. Inverno = pico da truta.' };
+  }
+  if (ql.includes('country') || ql.includes('bota country') || ql.includes('chapéu')) {
+    return { tag:'acao', text: '<strong>Country no digital:</strong> Shopee é o canal principal (público sensível a preço, busca por impulso). Camisas xadrez flanela R$89,90 (margem 45%), bandanas R$19,90 (rotação alta), bota country couro no ML R$259,90 (margem 38%). Diferencial: fotos em cenário rural real do Sul de MG, não em estúdio. "Autêntico do campo mineiro" é posicionamento inimitável.' };
+  }
+  if (ql.includes('buy box') || ql.includes('ranking') || ql.includes('posição')) {
+    return { tag:'diag', text: '<strong>Buy Box e rankeamento:</strong> No ML, Buy Box é controlado por: preço competitivo + avaliação 4.5+ + entrega rápida (Full ganha automaticamente) + taxa de reclamação baixa. Para a Agro&Pet: ativar Envios Full para top 5 SKUs assim que atingir 30 reviews 4.7+. Para Shopee: use "Impulso de Anúncios" nas primeiras semanas para ganhar visibilidade orgânica.' };
+  }
+  if (ql.includes('shopee') || ql.includes('mercado livre') || ql.includes('canal')) {
+    return { tag:'diag', text: '<strong>Decisão de canal:</strong> Outdoor + botas + pesca + pet saúde → ML (ticket alto, compra planejada). Tapetes + country + brinquedos + acessórios → Shopee (impulso + preço). Kit Agulhas Negras → ML (ticket R$320+). Kit Higiene Pet → Shopee (ticket R$55). Regra: se ticket > R$120, começa pelo ML. Se volume é o objetivo, Shopee.' };
+  }
+  return { tag:'acao', text: `<strong>Análise da pergunta:</strong> "${q}"<br><br>Para esta questão, o agente recomenda aplicar o framework completo: (1) <em>Diagnóstico</em> — qual é o cenário atual desta situação para a Agro&Pet Tupinambas? (2) <em>Posição</em> — onde estamos agora em relação ao objetivo? (3) <em>Oportunidade</em> — qual white space esta situação abre? (4) <em>Ação</em> — o que executar essa semana? (5) <em>Métrica</em> — como medir sucesso em 30 dias? (6) <em>Risco</em> — o que pode dar errado e como mitigar?<br><br>Selecione o cenário mais próximo na sidebar para uma análise detalhada específica desta questão.` };
+}
+
+function resetAgent() {
+  if (stepTimeout) clearTimeout(stepTimeout);
+  simRunning = false; tickSec = 0;
+  document.querySelectorAll('.scen-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('top-phase').textContent = 'Aguardando cenário';
+  document.getElementById('chat-log').innerHTML = '';
+  document.getElementById('decisions-log').innerHTML = '<div class="log-mini">Agente reiniciado.</div>';
+  updateKPIs({gmv:'R$ 0',ped:'0',skus:'0',status:'—',av:'—',mg:'—',dgmv:'',dped:'',dskus:'',dstatus:'',dav:'',dmg:''});
+  const log = document.getElementById('chat-log');
+  const div = document.createElement('div');
+  div.className = 'msg system';
+  div.innerHTML = `<div class="msg-avatar" style="background:#f5f5f5;">🌿</div><div class="msg-body"><div class="msg-meta"><span class="msg-name" style="color:var(--green);">AgroPet Agente</span><span class="msg-ts">00:00</span><span class="msg-tag tag-meta">sistema</span></div><div class="msg-content"><strong>Agente reiniciado.</strong> Selecione um cenário ou faça uma pergunta.</div></div>`;
+  log.appendChild(div);
+}
+
+document.getElementById('chat-input').addEventListener('keydown', e => {
+  if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendUserMsg(); }
+});
+</script>
+</body>
+</html>
